@@ -85,9 +85,7 @@ def run_ass():
             continue
         if shift_time:
             doc.events[i].start += shift_time
-            # print(1, doc.events[i].end)
             doc.events[i].end += shift_time
-            # print(2, doc.events[i].end)
 
     new_file = filePath.parent / (filePath.stem + "_modified" + filePath.suffix)
     with open(new_file, "w" , encoding='utf_8_sig') as f:
@@ -106,9 +104,7 @@ def run_srt():
             continue
         if shift_time:
             doc[i].start += shift_time
-            print(1, doc[i].end)
             doc[i].end += shift_time
-            print(2, doc[i].end)
 
     new_file = filePath.parent / (filePath.stem + "_modified" + filePath.suffix)
     with open(new_file, "w" , encoding='utf_8_sig') as f:
@@ -139,6 +135,3 @@ if __name__ == "__main__":
         run_ass()
     elif filePath.suffix == ".srt":
         run_srt()
-
-    
-# python .\basic-sub-utility.py "C:\Coding\.extract\test.srt" -s 1.5 --start 00:00:01.1234 --end 00:00:33.1234
