@@ -162,5 +162,4 @@ if __name__ == "__main__":
         remove_st = convert_HHMMSSssss(args.remove_start)
     if args.remove_end is not None:
         remove_et = convert_HHMMSSssss(args.remove_end)
-    
     run_both(filePath.suffix)
