@@ -64,6 +64,71 @@ ARGUMENTS = {
     },
 }
 
+class Sub:
+    def __init__(self, ext):
+        self.ext = ext
+
+    def open(self):
+        doc = False
+        with open(filePath.resolve(), 'r', encoding='utf-8-sig') as f:
+            match self.ext:
+                case ".ass":
+                    doc = ass.parse(f)
+                case ".srt":
+                    lines = f.read()
+                    doc = list(srt.parse(lines))
+            f.close()
+        return doc
+
+    def output(self, doc):
+        new_file = filePath.parent / (filePath.stem + "_modified" + filePath.suffix)
+        with open(new_file, "w" , encoding='utf_8_sig') as f:
+            match self.ext:
+                case ".ass":
+                    doc.dump_file(f)
+                case ".srt":
+                    srtblock = srt.compose(doc)
+                    f.write(srtblock)
+            f.close()
+
+    def get_events(self, doc):
+        match self.ext:
+            case ".ass":
+                return doc.events
+            case ".srt":
+                return doc
+    
+    def set_events(self, doc, events):
+        match self.ext:
+            case ".ass":
+                doc.events = events
+                return doc
+            case ".srt":
+                return events
+
+
+def run_both(ext):
+    sub = Sub(ext)
+    doc = sub.open()
+    events = sub.get_events(doc)
+    for i in range(len(events)):
+        if args.start is not None and start_time > events[i].start:
+            continue
+        if args.end is not None and end_time < events[i].end:
+            continue
+        if args.shift is not None:
+            events[i].start += shift_time
+            events[i].end += shift_time
+    
+    if args.remove_start is not None:
+        print("here")
+        events = list(filter(lambda x: x.start < remove_st, events))
+    if args.remove_end is not None:
+        events = list(filter(lambda x: x.end > remove_et, events))
+
+    doc = sub.set_events(doc, events)
+    sub.output(doc)
+
 
 def get_args():
     parser = argparse.ArgumentParser(description="Basic utilities for subtitles")
@@ -73,45 +138,6 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def run_ass():
-    with open(filePath.resolve(), 'r', encoding='utf-8-sig') as f:
-      doc = ass.parse(f)
-      f.close()
-    
-    for i in range(len(doc.events)):
-        if start_time and start_time > doc.events[i].start:
-            continue
-        if end_time and end_time < doc.events[i].end:
-            continue
-        if shift_time:
-            doc.events[i].start += shift_time
-            doc.events[i].end += shift_time
-
-    new_file = filePath.parent / (filePath.stem + "_modified" + filePath.suffix)
-    with open(new_file, "w" , encoding='utf_8_sig') as f:
-        doc.dump_file(f)
-
-def run_srt():
-    with open(filePath.resolve(), 'r', encoding='utf-8-sig') as f:
-      lines = f.read()
-      doc = list(srt.parse(lines))
-      f.close()
-    
-    for i in range(len(doc)):
-        if start_time and start_time > doc[i].start:
-            continue
-        if end_time and end_time < doc[i].end:
-            continue
-        if shift_time:
-            doc[i].start += shift_time
-            doc[i].end += shift_time
-
-    new_file = filePath.parent / (filePath.stem + "_modified" + filePath.suffix)
-    with open(new_file, "w" , encoding='utf_8_sig') as f:
-        srtblock = srt.compose(doc)
-        f.write(srtblock)
-        f.close()
-
 if __name__ == "__main__":
     args = get_args()
     filePath = Path(args.file)
@@ -119,19 +145,22 @@ if __name__ == "__main__":
     shift_time = False
     start_time = False
     end_time = False
+    remove_st = False
+    remove_et = False
     def convert_HHMMSSssss(str):
         t = str.split(".")
         dt = datetime.strptime(t[0], "%H:%M:%S")
         td = timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second, microseconds=int(t[1])*100)
         return td
-    if args.shift:
+    if args.shift is not None:
         shift_time = timedelta(seconds=float(args.shift))
-    if args.start:
+    if args.start is not None:
         start_time = convert_HHMMSSssss(args.start)
-    if args.end:
+    if args.end is not None:
         end_time = convert_HHMMSSssss(args.end)
+    if args.remove_start is not None:
+        remove_st = convert_HHMMSSssss(args.remove_start)
+    if args.remove_end is not None:
+        remove_et = convert_HHMMSSssss(args.remove_end)
     
-    if filePath.suffix == ".ass":
-        run_ass()
-    elif filePath.suffix == ".srt":
-        run_srt()
+    run_both(filePath.suffix)

@@ -1,12 +1,10 @@
 # basic-sub-utility
 
-Python script to do basic functions with .srt and .ass subtitle files, due to a lack of other CLI options to work with subtitles.
+Python script to do basic functions with .srt and .ass subtitle files, due to a lack of other CLI options for working with subtitles.
 
-To use, get the executible from the [releases section](https://github.com/Ulidtsoa01/basic-sub-utility/releases).
+Built with pyinstaller.
 
-### Build
-
-`pyinstaller basic-sub-utility.py --onefile`
+To download, get the executable from the [releases section](https://github.com/Ulidtsoa01/basic-sub-utility/releases).
 
 ### Usage
 
