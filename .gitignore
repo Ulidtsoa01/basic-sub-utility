@@ -2,3 +2,4 @@ build/
 dist/
 basic-sub-utility.spec
 notes.py
+venv/

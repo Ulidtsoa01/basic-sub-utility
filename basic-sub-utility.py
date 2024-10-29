@@ -64,51 +64,55 @@ ARGUMENTS = {
     },
 }
 
-class Sub:
-    def __init__(self, ext):
-        self.ext = ext
-
+class ASS():
     def open(self):
-        doc = False
         with open(filePath.resolve(), 'r', encoding='utf-8-sig') as f:
-            match self.ext:
-                case ".ass":
-                    doc = ass.parse(f)
-                case ".srt":
-                    lines = f.read()
-                    doc = list(srt.parse(lines))
+            doc = ass.parse(f)
             f.close()
         return doc
-
+    
     def output(self, doc):
         new_file = filePath.parent / (filePath.stem + "_modified" + filePath.suffix)
         with open(new_file, "w" , encoding='utf_8_sig') as f:
-            match self.ext:
-                case ".ass":
-                    doc.dump_file(f)
-                case ".srt":
-                    srtblock = srt.compose(doc)
-                    f.write(srtblock)
+            doc.dump_file(f)
             f.close()
-
+    
     def get_events(self, doc):
-        match self.ext:
-            case ".ass":
-                return doc.events
-            case ".srt":
-                return doc
+        return doc.events
     
     def set_events(self, doc, events):
-        match self.ext:
-            case ".ass":
-                doc.events = events
-                return doc
-            case ".srt":
-                return events
+        doc.events = events
+        return doc
+
+
+class SRT():
+    def open(self):
+        with open(filePath.resolve(), 'r', encoding='utf-8-sig') as f:
+            lines = f.read()
+            doc = list(srt.parse(lines))
+            f.close()
+        return doc
+    
+    def output(self, doc):
+        new_file = filePath.parent / (filePath.stem + "_modified" + filePath.suffix)
+        with open(new_file, "w" , encoding='utf_8_sig') as f:
+            srtblock = srt.compose(doc)
+            f.write(srtblock)
+
+    def get_events(self, doc):
+        return doc
+    
+    def set_events(self, _, events):
+        return events
 
 
 def run_both(ext):
-    sub = Sub(ext)
+    sub = ""
+    if ext == ".ass":
+        sub = ASS()
+    if ext == ".srt":
+        sub = SRT()
+    
     doc = sub.open()
     events = sub.get_events(doc)
     for i in range(len(events)):
@@ -121,7 +125,6 @@ def run_both(ext):
             events[i].end += shift_time
     
     if args.remove_start is not None:
-        print("here")
         events = list(filter(lambda x: x.start < remove_st, events))
     if args.remove_end is not None:
         events = list(filter(lambda x: x.end > remove_et, events))
