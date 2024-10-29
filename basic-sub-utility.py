@@ -91,7 +91,6 @@ class SRT():
         with open(filePath.resolve(), 'r', encoding='utf-8-sig') as f:
             lines = f.read()
             doc = list(srt.parse(lines))
-            f.flush()
             f.close()
         return doc
     
@@ -100,6 +99,8 @@ class SRT():
         with open(new_file, "w" , encoding='utf_8_sig') as f:
             srtblock = srt.compose(doc)
             f.write(srtblock)
+            f.flush()
+            f.close()
 
     def get_events(self, doc):
         return doc
