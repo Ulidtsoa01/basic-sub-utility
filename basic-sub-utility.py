@@ -75,6 +75,7 @@ class ASS():
         new_file = filePath.parent / (filePath.stem + "_modified" + filePath.suffix)
         with open(new_file, "w" , encoding='utf_8_sig') as f:
             doc.dump_file(f)
+            f.flush()
             f.close()
     
     def get_events(self, doc):
@@ -90,6 +91,7 @@ class SRT():
         with open(filePath.resolve(), 'r', encoding='utf-8-sig') as f:
             lines = f.read()
             doc = list(srt.parse(lines))
+            f.flush()
             f.close()
         return doc
     
